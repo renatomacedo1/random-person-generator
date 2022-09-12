@@ -15,6 +15,7 @@ function App() {
   const [person, setPerson] = useState(null);
   const [title, setTitle] = useState("name");
   const [value, setValue] = useState("random person");
+  const [status, setStatus] = useState("OK");
 
   const getPerson = async () => {
     setLoading(true);
@@ -22,35 +23,43 @@ function App() {
       const response = await fetch(url);
       const data = await response.json();
       const person = data.results[0];
-      const { phone, email } = person;
-      const { large: image } = person.picture;
+      const { phone, email } = person || {
+        phone: "unavailable",
+        email: "unavailable",
+      };
+      const { large: image } = person.picture || defaultImage;
       const {
         login: { password },
-      } = person;
-      const { first, last } = person.name;
+      } = person || "unavailable";
+      const { first, last } = person.name || {
+        first: "unavailable",
+        last: "unavailable",
+      };
       const {
         dob: { age },
-      } = person;
+      } = person || "unavailable";
       const {
         street: { number, name },
-      } = person.location;
+      } = person.location || { number: "unavailable", name: "unavailable" };
 
       const newPerson = {
-        image: image || defaultImage,
-        phone: phone || "unavailable",
-        email: email || "unavailable",
-        password: password || "unavailable",
-        age: age || "unavailable",
-        street: `${number} ${name}` || "unavailable",
-        name: `${first} ${last}` || "unavailable",
+        image,
+        phone,
+        email,
+        password,
+        age,
+        street: `${number} ${name}`,
+        name: `${first} ${last}`,
       };
 
       setPerson(newPerson);
       setLoading(false);
       setTitle("name");
       setValue(newPerson.name);
+      setStatus("");
     } catch (error) {
-      return <div>An error ocurred while fetching data</div>;
+      setLoading(false);
+      setStatus("Server error. Please try again.");
     }
   };
 
@@ -121,6 +130,7 @@ function App() {
           <button className="btn" type="button" onClick={getPerson}>
             {loading ? "loading..." : "random user"}
           </button>
+          <h3>{status}</h3>
         </div>
       </div>
     </main>
